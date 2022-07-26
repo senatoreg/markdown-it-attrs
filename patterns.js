@@ -347,7 +347,7 @@ module.exports = options => {
         const content = token.content;
         const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
         let ii = i + 1,
-            ll = token[i].level - 1;
+            ll = tokens[i].level - 1;
         while (tokens[ii + 1] && tokens[ii + 1].nesting === -1 && tokens[ii + 1].level == ll) { ii++; }
         const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
