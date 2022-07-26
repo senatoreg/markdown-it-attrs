@@ -263,6 +263,31 @@ module.exports = function (options) {
     tests: [{
       shift: 0,
       block: true,
+      type: function type(t) {
+        return !/^container_/.test(t);
+      },
+      info: utils.hasDelimiters('end', options)
+    }],
+    transform: function transform(tokens, i) {
+      var token = tokens[i];
+      var start = token.info.lastIndexOf(options.leftDelimiter);
+      var attrs = utils.getAttrs(token.info, start, options);
+      utils.addAttrs(attrs, token);
+      token.info = utils.removeDelimiter(token.info, options);
+    }
+  }, {
+    /**
+     * ::: name {.cls}
+     *
+     * :::
+     */
+    name: 'container blocks',
+    tests: [{
+      shift: 0,
+      block: true,
+      type: function type(t) {
+        return /^container_/.test(t);
+      },
       info: utils.hasDelimiters('end', options)
     }],
     transform: function transform(tokens, i) {
@@ -546,9 +571,10 @@ module.exports = function (options) {
       var token = tokens[i].children[j];
       var content = token.content;
       var attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
-      var ii = i + 1;
+      var ii = i + 1,
+          ll = token[i].level - 1;
 
-      while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) {
+      while (tokens[ii + 1] && tokens[ii + 1].nesting === -1 && tokens[ii + 1].level == ll) {
         ii++;
       }
 
