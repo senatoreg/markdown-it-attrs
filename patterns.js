@@ -24,6 +24,29 @@ module.exports = options => {
         {
           shift: 0,
           block: true,
+          type: (t) => !/^container_/.test(t),
+          info: utils.hasDelimiters('end', options)
+        }
+      ],
+      transform: (tokens, i) => {
+        const token = tokens[i];
+        const start = token.info.lastIndexOf(options.leftDelimiter);
+        const attrs = utils.getAttrs(token.info, start, options);
+        utils.addAttrs(attrs, token);
+        token.info = utils.removeDelimiter(token.info, options);
+      }
+    }, {
+      /**
+       * ::: name {.cls}
+       *
+       * :::
+       */
+      name: 'container blocks',
+      tests: [
+        {
+          shift: 0,
+          block: true,
+          type: (t) => /^container_/.test(t),
           info: utils.hasDelimiters('end', options)
         }
       ],
@@ -323,8 +346,9 @@ module.exports = options => {
         const token = tokens[i].children[j];
         const content = token.content;
         const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
-        let ii = i + 1;
-        while (tokens[ii + 1] && tokens[ii + 1].nesting === -1) { ii++; }
+        let ii = i + 1,
+            ll = token[i].level - 1;
+        while (tokens[ii + 1] && tokens[ii + 1].nesting === -1 && tokens[ii + 1].level == ll) { ii++; }
         const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
         const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
