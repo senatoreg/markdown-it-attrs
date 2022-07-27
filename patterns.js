@@ -193,6 +193,44 @@ module.exports = options => {
       }
     }, {
       /**
+       * > item
+       * {.a}
+       */
+      name: 'blockquote softbreak',
+      tests: [
+        {
+          shift: 2,
+          type: 'blockquote_close'
+        }, {
+          shift: -1,
+          type: 'paragraph_open'
+        }, {
+          shift: 0,
+          type: 'inline',
+          children: [
+            {
+              position: -2,
+              type: 'softbreak'
+            }, {
+              position: -1,
+              type: 'text',
+              content: utils.hasDelimiters('only', options)
+            }
+          ]
+        }
+      ],
+      transform: (tokens, i, j) => {
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, 0, options);
+        let ii = i - 1;
+        while (tokens[ii - 1] &&
+          tokens[ii - 1].type !== 'blockquote_open') { ii--; }
+        utils.addAttrs(attrs, tokens[ii - 1]);
+        tokens[i].children = tokens[i].children.slice(0, -2);
+      }
+    }, {
+      /**
        * - nested list
        *   - with double \n
        *   {.a} <-- apply to nested ul
@@ -348,7 +386,7 @@ module.exports = options => {
         const attrs = utils.getAttrs(content, content.lastIndexOf(options.leftDelimiter), options);
         let ii = i + 1,
             ll = tokens[i].level - 1;
-        while (tokens[ii + 1] && tokens[ii + 1].nesting === -1 && tokens[ii + 1].level == ll) { ii++; }
+        while (tokens[ii + 1] && tokens[ii + 1].nesting === -1 && tokens[ii + 1].level === ll) { ii++; }
         const openingToken = utils.getMatchingOpeningToken(tokens, ii);
         utils.addAttrs(attrs, openingToken);
         const trimmed = content.slice(0, content.lastIndexOf(options.leftDelimiter));
