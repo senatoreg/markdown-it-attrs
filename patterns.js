@@ -231,6 +231,45 @@ module.exports = options => {
       }
     }, {
       /**
+       * item
+       * : definition
+       * {.a}
+       */
+      name: 'description list softbreak',
+      tests: [
+        {
+          shift: 3,
+          type: 'dl_close'
+        }, {
+          shift: -2,
+          type: (t) => t === 'dd_open' || t === 'dt_open',
+        }, {
+          shift: 0,
+          type: 'inline',
+          children: [
+            {
+              position: -2,
+              type: 'softbreak'
+            }, {
+              position: -1,
+              type: 'text',
+              content: utils.hasDelimiters('only', options)
+            }
+          ]
+        }
+      ],
+      transform: (tokens, i, j) => {
+        const token = tokens[i].children[j];
+        const content = token.content;
+        const attrs = utils.getAttrs(content, 0, options);
+        let ii = i - 1;
+        while (tokens[ii - 1] &&
+          tokens[ii - 1].type !== 'dl_open') { ii--; }
+        utils.addAttrs(attrs, tokens[ii - 1]);
+        tokens[i].children = tokens[i].children.slice(0, -2);
+      }
+    }, {
+      /**
        * - nested list
        *   - with double \n
        *   {.a} <-- apply to nested ul
